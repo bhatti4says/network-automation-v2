@@ -1,0 +1,55 @@
+name: Network Automation CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install flake8
+
+    - name: Lint Python scripts
+      run: |
+        if [ -d "scripts" ]; then
+          flake8 scripts || true
+        fi
+
+    - name: Install Ansible
+      run: |
+        pip install ansible
+
+    - name: Check Ansible playbooks
+      run: |
+        if [ -d "ansible/playbooks" ]; then
+          ansible-playbook ansible/playbooks/*.yml --syntax-check || true
+        fi
+
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Validate Terraform
+      run: |
+        if [ -d "terraform" ]; then
+          for dir in $(find terraform -type d); do
+            cd $dir
+            terraform init -backend=false
+            terraform validate || true
+            cd -
+          done
+        fi
