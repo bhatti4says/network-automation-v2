@@ -1,6 +1,22 @@
+# Python
 __pycache__/
 *.pyc
-.env
+*.pyo
+
+# Virtual env
 venv/
+.env
+
+# Logs
 *.log
-*.tmp
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Ansible
+*.retry
+
+# OS files
+.DS_Store
