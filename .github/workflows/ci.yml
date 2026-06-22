@@ -39,6 +39,9 @@ jobs:
         if [ -d "ansible/playbooks" ]; then
           ansible-playbook ansible/playbooks/*.yml --syntax-check || true
         fi
+    - name: Run Ansible test playbook
+      run: |
+          ansible-playbook -i ansible/inventory.ini ansible/playbooks/test.yml
 
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v3
