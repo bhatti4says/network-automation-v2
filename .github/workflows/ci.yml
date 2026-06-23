@@ -1,46 +1,28 @@
----
-name: Network Automation CI
+- name: Install Python dependencies
+  run: |
+    pip install --upgrade pip
+    pip install -r requirements.txt
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+- name: Lint Python scripts
+  run: |
+    if [ -d "scripts" ]; then
+      flake8 scripts
+    fi
 
-jobs:
-  validate:
-    runs-on: ubuntu-latest
+- name: Run Cisco automation script (TEST MODE)
+  run: |
+    python scripts/cisco/push_config.py
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+- name: Install Ansible
+  run: |
+    pip install ansible
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+- name: Check Ansible playbooks
+  run: |
+    if [ -d "ansible/playbooks" ]; then
+      ansible-playbook ansible/playbooks/*.yml --syntax-check || true
+    fi
 
-      - name: Install Python dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Lint Python scripts
-        run: |
-          if [ -d "scripts" ]; then
-            flake8 scripts
-          fi
-
-      - name: Install Ansible
-        run: |
-          pip install ansible
-
-      - name: Check Ansible playbooks
-        run: |
-          if [ -d "ansible/playbooks" ]; then
-            ansible-playbook ansible/playbooks/*.yml --syntax-check || true
-          fi
-
-      - name: Run Ansible test playbook
-        run: |
-          ansible-playbook -i ansible/inventory.ini ansible/playbooks/test.yml
+- name: Run Ansible test playbook
+  run: |
+    ansible-playbook -i ansible/inventory.ini ansible/playbooks/test.yml
